@@ -1,7 +1,9 @@
+import { createUserSchema } from '../schemas';
 import { db } from "@/db";
 import { Request, Response } from "express";
 import { hash } from "bcrypt"
 import { Role, User } from "@prisma/client";
+import { validateSchema, handleValidationResponse } from '../utils';
 
 
 export const createUser = async (req: Request, res: Response) => {
@@ -20,23 +22,26 @@ export const createUser = async (req: Request, res: Response) => {
     } = req.body;
 
     try {
+        const validatedFields = validateSchema(createUserSchema, req.body);
+        if (!handleValidationResponse(validatedFields, res)) return;
+
         const existingUserByEmail = await db.user.findUnique({
             where: { email }
         });
 
-        if (existingUserByEmail) { res.status(409).json({ error: `this email (${email}) already exists!`, data: null }); return; }
+        if (existingUserByEmail) { return res.status(409).json({ error: `this email (${email}) already exists!`, data: null }); }
 
         const existingUserByPhone = await db.user.findUnique({
             where: { phone }
         });
 
-        if (existingUserByPhone) { res.status(409).json({ error: `this phone number (${phone}) is already taken!`, data: null }); return; }
+        if (existingUserByPhone) { res.status(409).json({ error: `this phone number (${phone}) is already taken!`, data: null }); }
 
         const existingUserByUsername = await db.user.findUnique({
             where: { username }
         });
 
-        if (existingUserByUsername) { res.status(409).json({ error: `this username (${username}) is already taken!`, data: null }); return; }
+        if (existingUserByUsername) { res.status(409).json({ error: `this username (${username}) is already taken!`, data: null }); }
 
         const hashedPassword: string = await hash(password, 10)
 

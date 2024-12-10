@@ -1,9 +1,18 @@
 import { db } from "@/db";
+import { createShopSchema } from "@/schemas";
+import { handleValidationResponse, validateSchema } from "@/utils";
 import { Request, Response } from "express";
 
 export const createShop= async (req : Request , res : Response) => {
     const {name , location , slug  , adminId,attendantIds} = req.body;
     try {
+
+        const validatedFields = validateSchema(createShopSchema, req.body);
+         
+        if (!handleValidationResponse(validatedFields, res)) return;
+
+
+
         const existingShop = await db.shop.findUnique({
             where : {
                 slug
