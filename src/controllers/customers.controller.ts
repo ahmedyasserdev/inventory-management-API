@@ -1,62 +1,120 @@
 import { db } from "@/db";
+import { createCustomerSchema } from "@/schemas";
+import { handleValidationResponse } from "@/utils";
+import { validateSchema } from "@/utils";
 import { Request, Response } from "express"
 
-export const getCustomers= async (req:Request , res:Response) => {
-    const costumers = [
-        {
-            name : "Ahmed",
-            age : 18 
-        },
-        {
-            name : "Ahmed",
-            age : 18 
-        },
-        {
-            name : "Ahmed",
-            age : 18 
-        },
-        {
-            name : "Ahmed",
-            age : 18 
-        },
-    ]; 
 
-    return res.status(200).json(costumers)
-}
+export const createCustomer = async (req: Request, res: Response) => {
+    const {
+        email,
+        phone,
+        firstName,
+        lastName,
+        gender,
+        NIN,
+        country,
+        location,
+        dot,
+        maxCreditLimit,
+        maxCreditDays,
+        taxPin,
+        customerType,
 
-export const createCustomer = async (req : Request , res : Response) =>{
-    const {name , email , phone} = req.body;
-
+    } = req.body;
     try {
-            const newCustomer = await db.customer.create({
-                data : {
-                    name , 
-                    email , 
-                    phone,
-                        
-                }
-            });
 
-        return res.status(201).json(newCustomer)
+        const validatedFields = validateSchema(createCustomerSchema, req.body);
+
+        if (!handleValidationResponse(validatedFields, res)) return;
+
+        const existingCustomerByEmail = await db.customer.findUnique({
+            where: {
+                email
+            }
+        })
+
+        if (existingCustomerByEmail) return res.status(409).json({ error: `this customer email (${email}) already exists!`, data: null });
+
+
+        const existingCustomerByPhoneNumber = await db.customer.findUnique({
+            where: {
+                phone
+            }
+        })
+
+        if (existingCustomerByPhoneNumber) return res.status(409).json({ error: `this customer phone number (${phone}) already exists!`, data: null });
+
+
+
+
+
+        const existingCustomerByNationalId = await db.customer.findUnique({
+            where: {
+                NIN
+            }
+        })
+
+        if (existingCustomerByNationalId) return res.status(409).json({ error: `this customer National Id (${NIN}) already exists!`, data: null });
+
+
+
+
+
+        const newCustomer = await db.customer.create({
+            data: {
+                email,
+                phone,
+                firstName,
+                lastName,
+                gender,
+                NIN,
+                country,
+                location,
+                dot,
+                maxCreditLimit,
+                maxCreditDays,
+                taxPin,
+                customerType,
+            }
+        })
+
+
+        return res.status(201).json({ data: newCustomer, error: null })
     } catch (error) {
         console.log(error)
+        return res.status(500).json({ error: "Internal Server Error", data: null })
     }
 }
 
-export const getCustomerById = async (req : Request , res : Response) => {
-    const {id} = req.params;
 
+export const getCustomers = async (req: Request, res: Response) => {
     try {
-            const customer = await db.customer.findUnique({
-                where : {
-                    id ,
-                }
-            });
-
-            return  res.status(200).json(customer)
- 
+        const customers = await db.customer.findMany({})
+        return res.status(200).json({ data: customers, error: null })
+        
     } catch (error) {
         console.log(error)
-        
+        return res.status(500).json({ error: "Internal Server Error", data: null })
+    }
+}
+
+
+
+export const getCustomerById = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        const customer = await db.customer.findUnique({
+            where: {
+                id,
+            }
+        });
+
+        return res.status(200).json({ data: customer, error: null })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ error: "Internal Server Error", data: null })
     }
 }

@@ -14,12 +14,22 @@ datasource db {
 }
 
 model Customer {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
-  name      String
-  phone     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  email          String?      @unique
+  phone          String       @unique
+  firstName      String
+  lastName       String
+  gender         Gender
+  NIN            String?      @unique //National Id
+  country        String
+  location       String
+  dot            DateTime?
+  maxCreditLimit Float
+  maxCreditDays  Int
+  taxPin         String?
+  customerType   CustomerType
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model User {
@@ -39,6 +49,48 @@ model User {
   shops     Shop[]
 }
 
+model Shop {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  location     String
+  slug         String   @unique
+  attendantIds String[] @db.ObjectId
+  adminId      String   @db.ObjectId
+  Admin        User     @relation(fields: [adminId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Supplier {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String 
+  email String? @unique
+  contactPerson String
+  phone String @unique
+  location String 
+  country String 
+  website String ?
+  taxPin String ? 
+  regnNumber String? @unique
+  bankAccountNumber String?
+  paymentTerm String ?
+  logo String ? @default("https://utfs.io/f/yPGxzzZ2qx9LoBnpkUYW1UIpRgaSiV4xkePrcAKMh8FOqvu9")
+  rating Float? 
+  notes String?
+  supplierType SupplierType
+ createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+}
+
+enum SupplierType {
+  MANUFACTURER
+    RETAIL
+  WHOLESALE
+  DISTRIBUTOR
+  OTHER
+}
+
 enum Role {
   ADMIN
   ATTENDANT
@@ -49,14 +101,9 @@ enum Gender {
   FEMALE
 }
 
-model Shop {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  location     String
-  slug         String   @unique
-  attendantIds String[] @db.ObjectId
-  adminId      String   @db.ObjectId
-  Admin        User     @relation(fields: [adminId], references: [id])
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+enum CustomerType {
+  RETAIL
+  WHOLESALE
+  DISTRIBUTOR
+  OTHER
 }

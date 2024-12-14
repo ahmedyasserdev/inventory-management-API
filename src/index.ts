@@ -4,6 +4,7 @@ import dotenv from "dotenv"
 import customerRouter from "./routes/customer.route";
 import userRouter from "./routes/user.route";
 import shopRouter from "./routes/shop.route";
+import supplierRouter from "./routes/supplier.route";
 
 
 
@@ -24,4 +25,5 @@ app.listen(PORT, () => {
 app.use("/api/v1", customerRouter)
 app.use("/api/v1", userRouter)
 app.use("/api/v1", shopRouter)
+app.use("/api/v1", supplierRouter)
 
