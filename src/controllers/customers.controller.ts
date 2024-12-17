@@ -58,9 +58,6 @@ export const createCustomer = async (req: Request, res: Response) => {
         if (existingCustomerByNationalId) return res.status(409).json({ error: `this customer National Id (${NIN}) already exists!`, data: null });
 
 
-
-
-
         const newCustomer = await db.customer.create({
             data: {
                 email,
@@ -90,7 +87,8 @@ export const createCustomer = async (req: Request, res: Response) => {
 
 export const getCustomers = async (req: Request, res: Response) => {
     try {
-        const customers = await db.customer.findMany({})
+        const customers = await db.customer.findMany({});
+        if (!customers.length) return res.status(404).json({ data: null, error: "No customers found" }) 
         return res.status(200).json({ data: customers, error: null })
         
     } catch (error) {
@@ -105,11 +103,14 @@ export const getCustomerById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
+        if (!id) return res.status(500).json({ data: null, error: "Missing Customer Id" })
         const customer = await db.customer.findUnique({
             where: {
                 id,
             }
         });
+        
+        if (!customer) return res.status(404).json({ data: null, error: "Customer not found" })
 
         return res.status(200).json({ data: customer, error: null })
 

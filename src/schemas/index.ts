@@ -59,3 +59,38 @@ export const createSupplierSChema = z.object({
         message: "Invalid supplier type"
     })
 });
+
+export const createUnitSchema = z.object({
+    name: z.string().min(1, { message: "Unit name is required" }),
+    abbreviation: z.string().min(1, { message: "Unit abbreviation is required" }),
+    slug: z.string().min(1, { message: "Slug is required" }),
+})
+export const createBrandSchema = z.object({
+    name: z.string().min(1, { message: "Brand name is required" }),
+    slug: z.string().min(1, { message: "Slug is required" }),
+})
+export const createCategorySchema = z.object({
+    name: z.string().min(1, { message: "Category name is required" }),
+    slug: z.string().min(1, { message: "Slug is required" }),
+})
+
+
+export const createProductSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  description: z.string().nullable().optional(),
+  batchNumber: z.string().nullable().optional(),
+  barCode: z.string().min(1, "Barcode is required"),
+  image: z.string().nullable().optional(),
+  tax: z.number().int().nullable().optional(),
+  aletQty: z.number().int(),
+  sku: z.string().min(1, "SKU is required"),
+  productCode: z.string().min(1, "Product code is required"),
+  expiryDate: z.string().or(z.date()), // Accepts both string and Date objects
+  slug: z.string().min(2, "Slug must be at least 2 characters"),
+  price: z.number().int().positive("Price must be a positive number"),
+  buyingPrice: z.number().int().positive("Buying price must be a positive number"),
+  unitId: z.string().nullable().optional(),
+  brandId: z.string().nullable().optional(),
+  categoryId: z.string().nullable().optional(),
+  supplierId: z.string().nullable().optional(),
+});

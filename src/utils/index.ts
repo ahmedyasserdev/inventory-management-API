@@ -1,5 +1,6 @@
 import { ZodSchema, SafeParseReturnType } from 'zod';
 import { Response } from 'express';
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 /**
  * Validates the provided data against the given Zod schema.
@@ -24,3 +25,24 @@ export const handleValidationResponse = (validationResult: SafeParseReturnType<a
   }
   return true;
 };
+
+
+
+
+interface SignOption {
+  expiresIn?: string | number;
+}
+const DEFAULT_SIGN_OPTION: SignOption = {
+  expiresIn: "3d",
+};
+
+
+export const generateAccessToken = (
+  payload: JwtPayload,
+  options: SignOption = DEFAULT_SIGN_OPTION
+) => {
+  const secret = process.env.SECRET_KEY;
+  // Use this command to generate SECRET_KEY: openssl rand -base64 32
+  const token = jwt.sign(payload, secret!, options);
+  return token;
+}

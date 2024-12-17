@@ -62,30 +62,85 @@ model Shop {
 }
 
 model Supplier {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  name String 
-  email String? @unique
-  contactPerson String
-  phone String @unique
-  location String 
-  country String 
-  website String ?
-  taxPin String ? 
-  regnNumber String? @unique
+  id                String       @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  email             String?      @unique
+  contactPerson     String
+  phone             String       @unique
+  location          String
+  country           String
+  website           String?
+  taxPin            String?
+  regnNumber        String?      @unique
   bankAccountNumber String?
-  paymentTerm String ?
-  logo String ? @default("https://utfs.io/f/yPGxzzZ2qx9LoBnpkUYW1UIpRgaSiV4xkePrcAKMh8FOqvu9")
-  rating Float? 
-  notes String?
-  supplierType SupplierType
- createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  paymentTerm       String?
+  logo              String?      @default("https://utfs.io/f/yPGxzzZ2qx9LoBnpkUYW1UIpRgaSiV4xkePrcAKMh8FOqvu9")
+  rating            Float?
+  notes             String?
+  supplierType      SupplierType
+  products          Product[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
 
+model Unit {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  abbreviation String
+  slug String @unique
+  products     Product[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Brand {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Category {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  description String?
+  batchNumber String?
+  barCode String?  @unique
+  image String?
+  tax Int?
+  aletQty  Int
+  name        String
+  sku         String    @unique
+  productCode String @unique
+  expiryDate   DateTime 
+  slug        String    @unique
+  price       Int
+  buyingPrice       Int
+  Unit        Unit?     @relation(fields: [unitId], references: [id])
+  unitId      String?   @db.ObjectId
+  Brand       Brand?    @relation(fields: [brandId], references: [id])
+  brandId     String?   @db.ObjectId
+  Category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  String?   @db.ObjectId
+  Supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  supplierId  String?   @db.ObjectId
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 enum SupplierType {
   MANUFACTURER
-    RETAIL
+  RETAIL
   WHOLESALE
   DISTRIBUTOR
   OTHER

@@ -55,14 +55,6 @@ export const createSupplier = async (req: Request, res: Response) => {
 
         if (existingSupplierByRegNumber) return res.status(409).json({ error: `this supplier Resgistration number (${regnNumber}) already exists!`, data: null });
 
-
-
-
-
-
-
-
-
         const newSupplier = await db.supplier.create({
             data: {
                 name,
@@ -96,6 +88,8 @@ export const getSuppliers = async (req: Request, res: Response) => {
 
     try {
         const suppliers = await db.supplier.findMany({ orderBy: { createdAt: "desc" } })
+
+        if (!suppliers.length) return res.status(404).json({ data: null, error: "No suppliers found" })
         return res.status(200).json(suppliers)
 
     } catch (error) {
@@ -110,11 +104,15 @@ export const getSupplilerById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
+
+        if (!id) return res.status(500).json({ data: null, error: "Missing Supplier Id" })
         const supplier = await db.supplier.findUnique({
             where: {
                 id,
             }
         });
+
+        if (!supplier) return res.status(404).json({ data: null, error: "Supplier not found" })
 
         return res.status(200).json({ data: supplier, error: null })
 
