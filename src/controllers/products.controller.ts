@@ -149,10 +149,10 @@ export const updateProductById = async (req: Request, res: Response) => {
         const existingProduct = await db.product.findUnique({ where: { id } });
         if (!existingProduct) return res.status(404).json({ data: null, error: "Product not found" });
 
-        if (barCode !== existingProduct.barCode || 
-            sku !== existingProduct.sku || 
-            productCode !== existingProduct.productCode || 
-            slug !== existingProduct.slug) {
+        if ((barCode && barCode !== existingProduct.barCode )|| 
+          ( sku &&   sku !== existingProduct.sku) || 
+          (  productCode && productCode !== existingProduct.productCode) || 
+           ( slug && slug !== existingProduct.slug)) {
             
             const duplicateCheck = await db.product.findFirst({
                 where: {
@@ -190,7 +190,7 @@ export const updateProductById = async (req: Request, res: Response) => {
                 aletQty,
                 sku,
                 productCode,
-                expiryDate: new Date(expiryDate),
+                expiryDate,
                 slug,
                 price,
                 buyingPrice,

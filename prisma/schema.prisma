@@ -116,23 +116,23 @@ model Product {
   description String?
   batchNumber String?
   barCode String?  @unique
-  image String?
+  image String?  @default("https://utfs.io/f/yPGxzzZ2qx9LoBnpkUYW1UIpRgaSiV4xkePrcAKMh8FOqvu9")
   tax Int?
   aletQty  Int
   name        String
   sku         String    @unique
   productCode String @unique
-  expiryDate   DateTime 
+  expiryDate   DateTime ?
   slug        String    @unique
   price       Int
   buyingPrice       Int
-  Unit        Unit?     @relation(fields: [unitId], references: [id])
+  Unit        Unit?     @relation(fields: [unitId], references: [id] , onDelete : Cascade)
   unitId      String?   @db.ObjectId
-  Brand       Brand?    @relation(fields: [brandId], references: [id])
+  Brand       Brand?    @relation(fields: [brandId], references: [id], onDelete : Cascade)
   brandId     String?   @db.ObjectId
-  Category    Category? @relation(fields: [categoryId], references: [id])
+  Category    Category? @relation(fields: [categoryId], references: [id] , onDelete : Cascade)
   categoryId  String?   @db.ObjectId
-  Supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  Supplier    Supplier? @relation(fields: [supplierId], references: [id], onDelete : Cascade)
   supplierId  String?   @db.ObjectId
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

@@ -4,11 +4,11 @@ import { Router } from "express";
 const productRouter = Router()
 
 
-productRouter.post("/product", createProduct)
-productRouter.get("/product", getProducts)
-productRouter.get("/product/:id", getProductById)
-productRouter.patch("/product/:id", updateProductById)
-productRouter.delete("/product/:id", deleteProductById)
+productRouter.post("/products", createProduct)
+productRouter.get("/products", getProducts)
+productRouter.get("/products/:id", getProductById)
+productRouter.patch("/products/:id", updateProductById)
+productRouter.delete("/products/:id", deleteProductById)
 
 
 export default productRouter
