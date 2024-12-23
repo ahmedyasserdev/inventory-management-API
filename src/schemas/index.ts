@@ -94,3 +94,24 @@ export const createProductSchema = z.object({
   categoryId: z.string().nullable().optional(),
   supplierId: z.string().nullable().optional(),
 });
+
+export const createSaleSchema = z.object({
+    customerName: z.string().optional(),
+    customerEmail: z.string().email().optional(),
+    saleAmount: z.number().min(0, "Sale amount must be positive"),
+    balanceAmount: z.number().min(0).optional().default(0),
+    paidAmount: z.number().min(0, "Paid amount is required"),
+    salerType: z.string().optional(),
+    paymentMethod:  z.enum(["CASH", "MOBILEMONEY"]).default("CASH"),
+    transactionCode: z.string().optional(),
+    saleType: z.enum(["PAID", "CREDIT"]).default("PAID"),
+    customerId: z.string().min(1, "Customer ID is required"),
+    saleItems: z.array(z.object({
+        productPrice: z.number().min(0),
+        saleId : z.string().min(1),
+        qty: z.number().min(1),
+        productImage : z.string().min(1),
+        productId: z.string().min(1),
+    })).optional()
+
+});

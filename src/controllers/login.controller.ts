@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { generateAccessToken,  } from "@/utils";
-import { compare,  } from "bcrypt";
+import { generateAccessToken, } from "@/utils";
+import { compare, } from "bcrypt";
 import { Request, Response } from "express";
 
 
@@ -36,3 +36,21 @@ export const authorizeUser = async (req: Request, res: Response) => {
         return res.status(500).json({ error: "Internal Server Error", data: null });
     }
 };
+
+
+export const forgotPassword = async (req: Request, res: Response) => {
+    const {email} = req.body;
+
+    try {
+        const existingUser = await db.user.findUnique({
+            where:  {email}
+        });
+
+        if (!existingUser) {
+            return res.status(404).json({ error: "User not found", data: null });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal Server Error", data: null });
+    }
+}

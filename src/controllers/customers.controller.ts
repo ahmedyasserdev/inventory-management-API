@@ -20,6 +20,7 @@ export const createCustomer = async (req: Request, res: Response) => {
         maxCreditDays,
         taxPin,
         customerType,
+        unpaidCreditAmount 
 
     } = req.body;
     try {
@@ -73,6 +74,7 @@ export const createCustomer = async (req: Request, res: Response) => {
                 maxCreditDays,
                 taxPin,
                 customerType,
+                unpaidCreditAmount  :  unpaidCreditAmount?? 0
             }
         })
 
@@ -87,7 +89,7 @@ export const createCustomer = async (req: Request, res: Response) => {
 
 export const getCustomers = async (req: Request, res: Response) => {
     try {
-        const customers = await db.customer.findMany({});
+        const customers = await db.customer.findMany({ orderBy : { createdAt : "desc" ,} , include : { sales : true} });
         if (!customers.length) return res.status(404).json({ data: null, error: "No customers found" }) 
         return res.status(200).json({ data: customers, error: null })
         
@@ -107,6 +109,9 @@ export const getCustomerById = async (req: Request, res: Response) => {
         const customer = await db.customer.findUnique({
             where: {
                 id,
+            },
+            include : {
+                sales : true
             }
         });
         

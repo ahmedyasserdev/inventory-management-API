@@ -14,22 +14,24 @@ datasource db {
 }
 
 model Customer {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  email          String?      @unique
-  phone          String       @unique
-  firstName      String
-  lastName       String
-  gender         Gender
-  NIN            String?      @unique //National Id
-  country        String
-  location       String
-  dot            DateTime?
-  maxCreditLimit Float
-  maxCreditDays  Int
-  taxPin         String?
-  customerType   CustomerType
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  email              String?      @unique
+  phone              String       @unique
+  firstName          String
+  lastName           String
+  gender             Gender
+  NIN                String?      @unique //National Id
+  country            String
+  location           String
+  dot                DateTime?
+  unpaidCreditAmount Int?         @default(0)
+  maxCreditLimit     Float
+  maxCreditDays      Int
+  taxPin             String?
+  customerType       CustomerType
+  sales              Sale[]
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 }
 
 model User {
@@ -40,25 +42,28 @@ model User {
   lastName  String
   password  String
   phone     String    @unique
-  image     String?
+  image     String?   @default("https://utfs.io/f/yPGxzzZ2qx9LoBnpkUYW1UIpRgaSiV4xkePrcAKMh8FOqvu9")
   dot       DateTime?
   role      Role      @default(ATTENDANT)
   gender    Gender
+  shops     Shop[]
+  resetToken     String?   
+  resetTokenExpiry DateTime? 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  shops     Shop[]
 }
 
 model Shop {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
   name         String
   location     String
-  slug         String   @unique
-  attendantIds String[] @db.ObjectId
-  adminId      String   @db.ObjectId
-  Admin        User     @relation(fields: [adminId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  slug         String    @unique
+  attendantIds String[]  @db.ObjectId
+  adminId      String    @db.ObjectId
+  Admin        User      @relation(fields: [adminId], references: [id])
+  products     Product[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model Supplier {
@@ -87,7 +92,7 @@ model Unit {
   id           String    @id @default(auto()) @map("_id") @db.ObjectId
   name         String
   abbreviation String
-  slug String @unique
+  slug         String    @unique
   products     Product[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -112,30 +117,77 @@ model Category {
 }
 
 model Product {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  description String?
-  batchNumber String?
-  barCode String?  @unique
-  image String?  @default("https://utfs.io/f/yPGxzzZ2qx9LoBnpkUYW1UIpRgaSiV4xkePrcAKMh8FOqvu9")
-  tax Int?
-  aletQty  Int
-  name        String
-  sku         String    @unique
-  productCode String @unique
-  expiryDate   DateTime ?
-  slug        String    @unique
-  price       Int
-  buyingPrice       Int
-  Unit        Unit?     @relation(fields: [unitId], references: [id] , onDelete : Cascade)
-  unitId      String?   @db.ObjectId
-  Brand       Brand?    @relation(fields: [brandId], references: [id], onDelete : Cascade)
-  brandId     String?   @db.ObjectId
-  Category    Category? @relation(fields: [categoryId], references: [id] , onDelete : Cascade)
-  categoryId  String?   @db.ObjectId
-  Supplier    Supplier? @relation(fields: [supplierId], references: [id], onDelete : Cascade)
-  supplierId  String?   @db.ObjectId
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  description    String?
+  batchNumber    String?
+  barCode        String?    @unique
+  image          String?    @default("https://utfs.io/f/yPGxzzZ2qx9LoBnpkUYW1UIpRgaSiV4xkePrcAKMh8FOqvu9")
+  tax            Int?
+  aletQty        Int
+  name           String
+  sku            String     @unique
+  productCode    String     @unique
+  expiryDate     DateTime?
+  slug           String     @unique
+  price          Int
+  wholesalePrice Int        @default(0)
+  buyingPrice    Int
+  Unit           Unit       @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  unitId         String     @db.ObjectId
+  Brand          Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brandId        String     @db.ObjectId
+  Category       Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId     String     @db.ObjectId
+  Supplier       Supplier   @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  supplierId     String     @db.ObjectId
+  Shop           Shop?      @relation(fields: [shopId], references: [id])
+  shopId         String?    @db.ObjectId
+  saleItems      SaleItem[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Sale {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  customerName    String?
+  saleNumber      String        @unique
+  customerEmail   String?
+  saleAmount      Int
+  balanceAmount   Int?          @default(0)
+  paidAmount      Int
+  paymentMethod   PaymentMethod @default(CASH)
+  transactionCode String?
+  saleType        SaleType      @default(PAID)
+  customerId      String        @db.ObjectId
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  saleItems SaleItem[]
+  Customer  Customer   @relation(fields: [customerId], references: [id])
+}
+
+model SaleItem {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  productPrice Float
+  qty          Int
+  productImage String
+  productName  String
+  sales        Sale?    @relation(fields: [saleId], references: [id])
+  saleId       String?  @db.ObjectId
+  Product      Product? @relation(fields: [productId], references: [id])
+  productId    String?  @db.ObjectId
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum PaymentMethod {
+  CASH
+  MOBILEMONEY
+}
+
+enum SaleType {
+  PAID
+  CREDIT
 }
 
 enum SupplierType {

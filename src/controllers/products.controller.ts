@@ -4,8 +4,8 @@ import { handleValidationResponse, validateSchema } from "@/utils";
 import { Request, Response } from "express";
 
 export const createProduct = async (req: Request, res: Response) => {
-    const { 
-        name, 
+    const {
+        name,
         description,
         batchNumber,
         barCode,
@@ -21,9 +21,11 @@ export const createProduct = async (req: Request, res: Response) => {
         unitId,
         brandId,
         categoryId,
-        supplierId
+        supplierId,
+        shopId,
+        wholesalePrice
     } = req.body;
-    
+
     try {
         const validatedFields = validateSchema(createProductSchema, req.body);
         if (!handleValidationResponse(validatedFields, res)) return;
@@ -40,9 +42,9 @@ export const createProduct = async (req: Request, res: Response) => {
         });
 
         if (existingProduct) {
-            return res.status(409).json({ 
-                error: "Product already exists with this barcode, SKU, product code, or slug", 
-                data: null 
+            return res.status(409).json({
+                error: "Product already exists with this barcode, SKU, product code, or slug",
+                data: null
             });
         }
 
@@ -64,7 +66,9 @@ export const createProduct = async (req: Request, res: Response) => {
                 unitId,
                 brandId,
                 categoryId,
-                supplierId
+                supplierId,
+                shopId,
+                wholesalePrice
             },
         });
 
@@ -80,14 +84,19 @@ export const getProducts = async (req: Request, res: Response) => {
     try {
         const products = await db.product.findMany({
             include: {
-                Unit: true,
+                Unit:  true,
                 Brand: true,
                 Category: true,
-                Supplier: true
+                Supplier: true,
+                Shop: true
             },
             orderBy: { createdAt: "desc" }
         });
-        
+
+        if (!products.length) {
+            return res.status(404).json({ data: [], error: "No products found" });
+        }
+
         return res.status(200).json({ data: products, error: null });
 
     } catch (error) {
@@ -145,15 +154,15 @@ export const updateProductById = async (req: Request, res: Response) => {
 
     try {
         if (!id) return res.status(400).json({ data: null, error: "Missing Product Id" });
-        
+
         const existingProduct = await db.product.findUnique({ where: { id } });
         if (!existingProduct) return res.status(404).json({ data: null, error: "Product not found" });
 
-        if ((barCode && barCode !== existingProduct.barCode )|| 
-          ( sku &&   sku !== existingProduct.sku) || 
-          (  productCode && productCode !== existingProduct.productCode) || 
-           ( slug && slug !== existingProduct.slug)) {
-            
+        if ((barCode && barCode !== existingProduct.barCode) ||
+            (sku && sku !== existingProduct.sku) ||
+            (productCode && productCode !== existingProduct.productCode) ||
+            (slug && slug !== existingProduct.slug)) {
+
             const duplicateCheck = await db.product.findFirst({
                 where: {
                     AND: [
@@ -167,13 +176,20 @@ export const updateProductById = async (req: Request, res: Response) => {
                             ]
                         }
                     ]
+                },
+                include : {
+                    Unit: true,
+                    Brand: true,
+                    Category: true,
+                    Supplier: true,
+                    Shop : true
                 }
             });
 
             if (duplicateCheck) {
-                return res.status(409).json({ 
-                    error: "Another product already exists with this barcode, SKU, product code, or slug", 
-                    data: null 
+                return res.status(409).json({
+                    error: "Another product already exists with this barcode, SKU, product code, or slug",
+                    data: null
                 });
             }
         }
@@ -203,7 +219,8 @@ export const updateProductById = async (req: Request, res: Response) => {
                 Unit: true,
                 Brand: true,
                 Category: true,
-                Supplier: true
+                Supplier: true,
+                Shop : true
             }
         });
 
@@ -219,7 +236,7 @@ export const deleteProductById = async (req: Request, res: Response) => {
 
     try {
         if (!id) return res.status(400).json({ data: null, error: "Missing Product Id" });
-        
+
         const product = await db.product.findUnique({ where: { id } });
         if (!product) return res.status(404).json({ data: null, error: "Product not found" });
 
